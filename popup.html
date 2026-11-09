@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <span class="logo">GM</span>
+      <h1>This week on streaming</h1>
+    </header>
+    <nav id="tabs">
+      <button data-tab="added" class="active">New</button>
+      <button data-tab="left">Leaving</button>
+      <button data-tab="coming">Coming</button>
+    </nav>
+    <ul id="list"></ul>
+    <p id="empty" hidden>Nothing tracked this week for your services.</p>
+    <footer>
+      <a id="full" href="https://galaxymovies.app/leaving" target="_blank" rel="noopener">Full list →</a>
+      <a href="https://galaxymovies.app" target="_blank" rel="noopener">Powered by Galaxy Movies</a>
+    </footer>
+    <script src="popup.js"></script>
+  </body>
+</html>

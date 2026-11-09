@@ -1,0 +1,16 @@
+* { box-sizing: border-box; }
+body {
+  max-width: 560px; margin: 32px auto; padding: 0 20px;
+  background: #14181c; color: rgba(255,255,255,.9);
+  font: 14px/1.5 -apple-system, system-ui, sans-serif;
+}
+h1 { font-size: 18px; display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+.logo { color: #ffd63d; font-weight: 800; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.55); margin: 20px 0 8px; }
+h2 small { text-transform: none; letter-spacing: 0; font-weight: 400; }
+section { border-top: 1px solid rgba(255,255,255,.08); padding-top: 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; }
+label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; }
+select { background: #1f252b; color: inherit; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 6px 10px; font-size: 13px; }
+#save { margin-top: 24px; padding: 8px 20px; border-radius: 8px; border: 0; background: #ffd63d; color: #14181c; font-weight: 700; cursor: pointer; }
+#saved { margin-left: 10px; color: #4ade80; font-size: 13px; }

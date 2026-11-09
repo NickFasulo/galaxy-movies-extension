@@ -1,0 +1,24 @@
+* { box-sizing: border-box; margin: 0; }
+body {
+  width: 340px; background: #14181c; color: rgba(255,255,255,.9);
+  font: 14px/1.45 -apple-system, system-ui, sans-serif; padding: 12px 14px;
+}
+header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.logo { font-weight: 800; color: #ffd63d; }
+h1 { font-size: 14px; font-weight: 700; }
+nav { display: flex; gap: 6px; margin-bottom: 10px; }
+nav button {
+  flex: 1; padding: 6px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,.14);
+  background: #1f252b; color: rgba(255,255,255,.75); cursor: pointer; font-size: 12px; font-weight: 600;
+}
+nav button.active { background: #ffd63d; color: #14181c; border-color: transparent; }
+ul { list-style: none; max-height: 320px; overflow-y: auto; }
+li { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+li:last-child { border-bottom: 0; }
+li a { color: rgba(255,255,255,.9); text-decoration: none; display: block; }
+li a:hover { text-decoration: underline; }
+li .meta { display: block; font-size: 11px; color: rgba(255,255,255,.45); }
+#empty { color: rgba(255,255,255,.45); font-size: 12px; padding: 12px 0; }
+footer { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.1); }
+footer a { color: #8ab4f8; font-size: 11px; text-decoration: none; }
+footer a:hover { text-decoration: underline; }

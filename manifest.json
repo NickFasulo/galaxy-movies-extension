@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Galaxy Movies — Where to Watch",
+  "short_name": "Galaxy Movies",
+  "version": "1.0.0",
+  "description": "See where a movie or show is streaming on IMDb, TMDB and Letterboxd, plus daily new & leaving lists for your services.",
+  "author": "Galaxy Movies",
+  "homepage_url": "https://galaxymovies.app",
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["https://galaxymovies.app/*"],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icons/48.png"
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.imdb.com/title/*",
+        "*://www.themoviedb.org/movie/*",
+        "*://www.themoviedb.org/tv/*",
+        "*://letterboxd.com/film/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "where-to-watch@galaxymovies.app",
+      "strict_min_version": "121.0"
+    }
+  }
+}

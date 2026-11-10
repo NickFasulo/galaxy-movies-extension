@@ -1,61 +1,11 @@
 #!/usr/bin/env python3
-# Renders the extension icons: the "G" wordmark glyph from the site's
-# SpaceRangerLaserItalic face on the favicon's deep-navy, as a rounded-square
-# badge. Supersampled 4x then downscaled so small sizes stay crisp.
-# Usage: python3 scripts/generate-icons.py
+# Thin wrapper — the badge render lives in the main repo so the extension
+# icons and the site favicon can't drift. Needs ../galaxy-movies checked out.
+import subprocess
+import sys
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
 
 REPO = Path(__file__).resolve().parent.parent
-FONT = REPO.parent / 'galaxy-movies' / 'public' / 'fonts' / 'SpaceRangerLaserItalic-J7an.otf'
-OUT = REPO / 'icons'
+GEN = REPO.parent / 'galaxy-movies' / 'scripts' / 'generate-brandmark.py'
 
-BG = (0, 30, 46, 255)          # favicon background navy
-FG = (255, 255, 255, 255)      # glyph white
-RING = (255, 255, 255, 26)     # faint ring so the circle reads on dark toolbars
-SS = 4                         # supersample factor
-
-
-def render(size: int) -> Image.Image:
-    s = size * SS
-    img = Image.new('RGBA', (s, s), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-
-    box = (0, 0, s - 1, s - 1)  # badge fills the canvas edge-to-edge
-    radius = int(s * 0.225)
-    d.rounded_rectangle(box, radius=radius, fill=BG)
-    d.rounded_rectangle(box, radius=radius, outline=RING, width=max(1, s // 64))
-
-    # The G runs large — up to ~84% of the canvas — and the final mask clips
-    # anything that reaches past the badge shape.
-    target = s * 0.84
-    font_size = s
-    for _ in range(40):
-        font = ImageFont.truetype(str(FONT), font_size)
-        l, t, r, b = font.getbbox('G')
-        w, h = r - l, b - t
-        if h <= 0 or w <= 0:
-            break
-        if abs(max(w, h) - target) < 1:
-            break
-        font_size = max(8, int(font_size * (target / max(w, h))))
-    # Bounding-box center reads right-of-center on an italic face — nudge left.
-    d.text((s / 2 - (l + w / 2) - s * 0.02, s / 2 - (t + h / 2)), 'G', font=font, fill=FG)
-
-    # Clip to the badge so glyph strokes can't escape the icon shape.
-    mask = Image.new('L', (s, s), 0)
-    ImageDraw.Draw(mask).rounded_rectangle(box, radius=radius, fill=255)
-    alpha = Image.composite(img.split()[3], Image.new('L', (s, s), 0), mask)
-    img.putalpha(alpha)
-
-    return img.resize((size, size), Image.LANCZOS)
-
-
-def main():
-    for size in (16, 32, 48, 128):
-        render(size).save(OUT / f'{size}.png')
-        print(f'icons/{size}.png')
-
-
-if __name__ == '__main__':
-    main()
+sys.exit(subprocess.call([sys.executable, str(GEN), '--extension-dir', str(REPO)]))

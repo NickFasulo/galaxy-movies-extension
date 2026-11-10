@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Galaxy Movies — Where to Watch",
   "short_name": "Galaxy Movies",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "See where a movie or show is streaming on IMDb, TMDB and Letterboxd, plus daily new & leaving lists for your services.",
   "author": "Galaxy Movies",
   "homepage_url": "https://galaxymovies.app",

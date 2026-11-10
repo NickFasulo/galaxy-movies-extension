@@ -38,11 +38,15 @@
     return m ? { title: m[1].trim(), year: m[2] } : null
   }
 
-  function render(result, myProviders) {
-    if (document.getElementById('gm-chip-host')) return
-    const host = document.createElement('div')
-    host.id = 'gm-chip-host'
-    const shadow = host.attachShadow({ mode: 'open' })
+  let chipHost = null
+  let dismissed = false
+
+  function render(result, myProviders, open) {
+    chipHost?.remove()
+    document.getElementById('gm-chip-host')?.remove()
+    chipHost = document.createElement('div')
+    chipHost.id = 'gm-chip-host'
+    const shadow = chipHost.attachShadow({ mode: 'open' })
 
     const p = result.providers || {}
     const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
@@ -120,11 +124,11 @@
         }
         button:hover { color: rgba(255,255,255,.8) }
       </style>
-      <div class="wrap" role="complementary" aria-label="Where to watch">
+      <div class="wrap${open ? ' open' : ''}" role="complementary" aria-label="Where to watch">
         <div class="bar">
           <span class="logo">GM</span>
           <span class="line">${esc(line)}</span>
-          <button class="exp" title="Show all services" aria-expanded="false">⌃</button>
+          <button class="exp" title="${open ? 'Collapse' : 'Show all services'}" aria-expanded="${open}">${open ? '⌄' : '⌃'}</button>
           <a href="${result.url}" target="_blank" rel="noopener noreferrer">→</a>
           <button class="close" title="Hide">✕</button>
         </div>
@@ -134,33 +138,45 @@
     const wrap = shadow.querySelector('.wrap')
     const exp = shadow.querySelector('.exp')
     exp.addEventListener('click', () => {
-      const open = wrap.classList.toggle('open')
-      exp.textContent = open ? '⌄' : '⌃'
-      exp.title = open ? 'Collapse' : 'Show all services'
-      exp.setAttribute('aria-expanded', String(open))
+      const isOpen = wrap.classList.toggle('open')
+      exp.textContent = isOpen ? '⌄' : '⌃'
+      exp.title = isOpen ? 'Collapse' : 'Show all services'
+      exp.setAttribute('aria-expanded', String(isOpen))
+      chrome.storage.sync.set({ chipOpen: isOpen })
     })
-    shadow.querySelector('.close').addEventListener('click', () => host.remove())
-    document.documentElement.appendChild(host)
+    shadow.querySelector('.close').addEventListener('click', () => {
+      dismissed = true
+      chipHost?.remove()
+    })
+    document.documentElement.appendChild(chipHost)
   }
 
   async function main() {
-    const opts = await chrome.storage.sync.get({ region: 'US', sites: {}, myProviders: [] })
+    const opts = await chrome.storage.sync.get({ region: 'US', sites: {}, myProviders: [], chipOpen: false })
     if (opts.sites[SITE_KEY] === false) return
     const query = extractQuery()
     if (!query) return
     query.region = opts.region
     const result = await chrome.runtime.sendMessage({ type: 'where', params: query })
-    if (result?.error || !result) return
-    render(result, opts.myProviders || [])
+    if (result?.error || !result || dismissed) return
+    render(result, opts.myProviders || [], !!opts.chipOpen)
   }
 
   main()
   // SPA navigations (TMDB/Letterboxd) reuse the document — rerun on URL change.
+  // Some pages strip foreign nodes during re-renders; re-append unless dismissed.
   let last = location.href
   new MutationObserver(() => {
-    if (location.href === last) return
-    last = location.href
-    document.getElementById('gm-chip-host')?.remove()
-    main()
+    if (location.href !== last) {
+      last = location.href
+      dismissed = false
+      chipHost?.remove()
+      chipHost = null
+      main()
+      return
+    }
+    if (chipHost && !chipHost.isConnected && !dismissed) {
+      document.documentElement.appendChild(chipHost)
+    }
   }).observe(document, { subtree: true, childList: true })
 })()

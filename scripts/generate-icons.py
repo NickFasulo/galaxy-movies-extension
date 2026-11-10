@@ -21,14 +21,13 @@ def render(size: int) -> Image.Image:
     img = Image.new('RGBA', (s, s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
 
-    pad = s // 64  # transparent margin around the circle
-    box = (pad, pad, s - pad - 1, s - pad - 1)
+    box = (0, 0, s - 1, s - 1)  # circle tangent to all edges — max footprint
     d.ellipse(box, fill=BG)
     d.ellipse(box, outline=RING, width=max(1, s // 64))
 
     # The G runs large — up to ~80% of the diameter — and the final circular
     # mask clips anything that reaches past the edge.
-    target = (s - 2 * pad) * 0.80
+    target = s * 0.80
     font_size = s
     for _ in range(40):
         font = ImageFont.truetype(str(FONT), font_size)

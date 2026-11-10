@@ -3,7 +3,8 @@
 // cached in chrome.storage.local so repeat lookups don't hit the API's
 // per-IP rate bucket.
 
-const API = 'https://galaxymovies.app'
+// www only — the apex 308-redirects to www and drops CORS on the hop.
+const API = 'https://www.galaxymovies.app'
 const WHERE_TTL = 6 * 60 * 60 * 1000
 const CHANGES_TTL = 30 * 60 * 1000
 

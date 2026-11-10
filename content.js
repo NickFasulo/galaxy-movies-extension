@@ -1,6 +1,7 @@
 // Where-to-watch chip on IMDb/TMDB/Letterboxd title pages. Renders into a
 // Shadow DOM so site CSS can't restyle it; fixed position avoids depending
-// on each site's (volatile) DOM structure.
+// on each site's (volatile) DOM structure. Collapsed = one-line pill;
+// expanded = card with every provider category + diff events.
 
 (function () {
   const SITE_KEY = location.hostname.includes('imdb.com')
@@ -11,6 +12,8 @@
         ? 'letterboxd'
         : null
   if (!SITE_KEY) return
+
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   function extractQuery() {
     if (SITE_KEY === 'imdb') {
@@ -48,17 +51,24 @@
       const base = mine.has(norm(s.name)) || [...mine].some((m) => norm(s.name).includes(m) || m.includes(norm(s.name))) ? `★${s.name}` : s.name
       return s.leavingOn ? `${base} (leaves ${s.leavingOn.slice(5)})` : base
     }
-    const subs = (p.flatrate || []).slice(0, 3)
-    const free = (p.free || []).concat(p.ads || []).slice(0, 2)
-    const hasData = subs.length || free.length || (p.rent || []).length || (p.buy || []).length
-    // When the title isn't streaming but is slated to arrive, that IS the
-    // answer — show it ahead of rent/buy.
-    const coming = (result.events?.coming || []).slice(0, 2)
+    const names = (list, max = 6) => {
+      const items = (list || []).map(mark)
+      const shown = items.slice(0, max)
+      return shown.join(', ') + (items.length > max ? ` +${items.length - max} more` : '')
+    }
 
+    const subs = p.flatrate || []
+    const free = (p.free || []).concat(p.ads || [])
+    const rentBuy = (p.rent || []).concat(p.buy || [])
+    const hasData = subs.length || free.length || rentBuy.length
+    const coming = (result.events?.coming || []).slice(0, 3)
+
+    // Collapsed line: top subs + free; when nothing's streaming, the
+    // announced arrival IS the answer.
     const line = hasData
       ? [
-          subs.length ? `▶ ${subs.map(mark).join(', ')}` : '',
-          free.length ? `free: ${free.map(mark).join(', ')}` : '',
+          subs.length ? `▶ ${names(subs, 3)}` : '',
+          free.length ? `free: ${names(free, 2)}` : '',
           !subs.length && coming.length ? `→ ${coming.map((c) => `${c.provider} ${c.date || ''}`).join(', ')}` : ''
         ]
           .filter(Boolean)
@@ -67,34 +77,69 @@
         ? `→ ${coming.map((c) => `${c.provider} ${c.date || ''}`).join(', ')}`
         : 'Where to watch'
 
+    const section = (label, list) =>
+      (list || []).length
+        ? `<div class="sec"><span class="lab">${label}</span><span class="names">${esc(names(list))}</span></div>`
+        : ''
+
+    const card = `
+      <div class="title">${esc(result.title)}${result.year ? ` (${result.year})` : ''}</div>
+      ${hasData ? section('Stream', subs) + section('Free', free) + section('Rent/buy', rentBuy) : '<div class="sec names">Not streaming in this region.</div>'}
+      ${coming.length ? `<div class="coming">Coming to ${esc(coming.map((c) => `${c.provider}${c.date ? ` ${c.date.slice(5)}` : ''}`).join(', '))}</div>` : ''}
+      <div class="foot"><a href="${result.url}" target="_blank" rel="noopener noreferrer">galaxymovies.app →</a></div>`
+
     shadow.innerHTML = `
       <style>
-        .chip {
+        .wrap {
           position: fixed; right: 16px; bottom: 16px; z-index: 2147483647;
-          display: flex; align-items: center; gap: 8px;
           background: #14181c; color: rgba(255,255,255,.9);
-          border: 1px solid rgba(255,255,255,.14); border-radius: 999px;
-          padding: 8px 14px; font: 500 13px/1.4 -apple-system, system-ui, sans-serif;
-          box-shadow: 0 4px 20px rgba(0,0,0,.45); cursor: default;
+          border: 1px solid rgba(255,255,255,.14); border-radius: 14px;
+          box-shadow: 0 6px 24px rgba(0,0,0,.5); overflow: hidden;
+          font: 500 13px/1.45 -apple-system, system-ui, sans-serif;
+          max-width: min(320px, calc(100vw - 32px));
           animation: gm-in .25s ease-out;
         }
         @keyframes gm-in { from { opacity: 0; transform: translateY(6px) } }
+        .bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
         .logo { font-weight: 800; color: #ffd63d; letter-spacing: .02em }
-        a { color: #8ab4f8; text-decoration: none; font-weight: 600 }
-        a:hover { text-decoration: underline }
+        .line { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .card { display: none; padding: 0 14px 12px; }
+        .wrap.open .card { display: block; }
+        .wrap.open .line { display: none; }
+        .title { font-weight: 700; margin: 2px 0 8px; }
+        .sec { display: flex; gap: 8px; margin: 4px 0; align-items: baseline; }
+        .lab { flex: 0 0 56px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.4); }
+        .names { font-size: 12.5px; }
+        .coming { margin-top: 8px; font-size: 12px; color: #ffd63d; }
+        .foot { margin-top: 8px; }
+        a { color: #8ab4f8; text-decoration: none; font-weight: 600; }
+        a:hover { text-decoration: underline; }
         button {
           background: none; border: 0; color: rgba(255,255,255,.4);
-          cursor: pointer; font-size: 14px; padding: 0 0 0 4px; line-height: 1;
+          cursor: pointer; font-size: 14px; padding: 2px 2px; line-height: 1;
         }
         button:hover { color: rgba(255,255,255,.8) }
       </style>
-      <div class="chip">
-        <span class="logo">GM</span>
-        <span>${line.replace(/</g, '&lt;')}</span>
-        <a href="${result.url}" target="_blank" rel="noopener noreferrer">→</a>
-        <button title="Hide">✕</button>
+      <div class="wrap" role="complementary" aria-label="Where to watch">
+        <div class="bar">
+          <span class="logo">GM</span>
+          <span class="line">${esc(line)}</span>
+          <button class="exp" title="Show all services" aria-expanded="false">⌃</button>
+          <a href="${result.url}" target="_blank" rel="noopener noreferrer">→</a>
+          <button class="close" title="Hide">✕</button>
+        </div>
+        <div class="card">${card}</div>
       </div>`
-    shadow.querySelector('button').addEventListener('click', () => host.remove())
+
+    const wrap = shadow.querySelector('.wrap')
+    const exp = shadow.querySelector('.exp')
+    exp.addEventListener('click', () => {
+      const open = wrap.classList.toggle('open')
+      exp.textContent = open ? '⌄' : '⌃'
+      exp.title = open ? 'Collapse' : 'Show all services'
+      exp.setAttribute('aria-expanded', String(open))
+    })
+    shadow.querySelector('.close').addEventListener('click', () => host.remove())
     document.documentElement.appendChild(host)
   }
 

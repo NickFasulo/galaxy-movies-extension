@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Renders the extension icons: the "G" wordmark glyph from the site's
-# SpaceRangerLaserItalic face on the favicon's deep-navy, cropped to a circle.
-# Supersampled 4x then downscaled so small sizes stay crisp.
+# SpaceRangerLaserItalic face on the favicon's deep-navy, as a rounded-square
+# badge. Supersampled 4x then downscaled so small sizes stay crisp.
 # Usage: python3 scripts/generate-icons.py
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
@@ -21,13 +21,14 @@ def render(size: int) -> Image.Image:
     img = Image.new('RGBA', (s, s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
 
-    box = (0, 0, s - 1, s - 1)  # circle tangent to all edges — max footprint
-    d.ellipse(box, fill=BG)
-    d.ellipse(box, outline=RING, width=max(1, s // 64))
+    box = (0, 0, s - 1, s - 1)  # badge fills the canvas edge-to-edge
+    radius = int(s * 0.225)
+    d.rounded_rectangle(box, radius=radius, fill=BG)
+    d.rounded_rectangle(box, radius=radius, outline=RING, width=max(1, s // 64))
 
-    # The G runs large — up to ~80% of the diameter — and the final circular
-    # mask clips anything that reaches past the edge.
-    target = s * 0.80
+    # The G runs large — up to ~84% of the canvas — and the final mask clips
+    # anything that reaches past the badge shape.
+    target = s * 0.84
     font_size = s
     for _ in range(40):
         font = ImageFont.truetype(str(FONT), font_size)
@@ -41,9 +42,9 @@ def render(size: int) -> Image.Image:
     # Bounding-box center reads right-of-center on an italic face — nudge left.
     d.text((s / 2 - (l + w / 2) - s * 0.02, s / 2 - (t + h / 2)), 'G', font=font, fill=FG)
 
-    # Clip to the circle so glyph strokes can't escape the icon shape.
+    # Clip to the badge so glyph strokes can't escape the icon shape.
     mask = Image.new('L', (s, s), 0)
-    ImageDraw.Draw(mask).ellipse(box, fill=255)
+    ImageDraw.Draw(mask).rounded_rectangle(box, radius=radius, fill=255)
     alpha = Image.composite(img.split()[3], Image.new('L', (s, s), 0), mask)
     img.putalpha(alpha)
 

@@ -26,9 +26,9 @@ def render(size: int) -> Image.Image:
     d.ellipse(box, fill=BG)
     d.ellipse(box, outline=RING, width=max(1, s // 64))
 
-    # Fit the glyph inside a square ~58% of the diameter — the italic G is
-    # much wider than it is tall, so width is the binding constraint.
-    target = (s - 2 * pad) * 0.58
+    # The G runs large — up to ~80% of the diameter — and the final circular
+    # mask clips anything that reaches past the edge.
+    target = (s - 2 * pad) * 0.80
     font_size = s
     for _ in range(40):
         font = ImageFont.truetype(str(FONT), font_size)
@@ -40,6 +40,12 @@ def render(size: int) -> Image.Image:
             break
         font_size = max(8, int(font_size * (target / max(w, h))))
     d.text((s / 2 - (l + w / 2), s / 2 - (t + h / 2)), 'G', font=font, fill=FG)
+
+    # Clip to the circle so glyph strokes can't escape the icon shape.
+    mask = Image.new('L', (s, s), 0)
+    ImageDraw.Draw(mask).ellipse(box, fill=255)
+    alpha = Image.composite(img.split()[3], Image.new('L', (s, s), 0), mask)
+    img.putalpha(alpha)
 
     return img.resize((size, size), Image.LANCZOS)
 

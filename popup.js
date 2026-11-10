@@ -1,4 +1,4 @@
-const SITE = 'https://galaxymovies.app'
+const SITE = 'https://www.galaxymovies.app'
 const MAX_ITEMS = 8
 
 let data = null

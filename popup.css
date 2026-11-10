@@ -4,7 +4,7 @@ body {
   font: 14px/1.45 -apple-system, system-ui, sans-serif; padding: 12px 14px;
 }
 header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.logo { font-weight: 800; color: #ffd63d; }
+.logo { width: 22px; height: 22px; display: block; }
 h1 { font-size: 14px; font-weight: 700; }
 nav { display: flex; gap: 6px; margin-bottom: 10px; }
 nav button {

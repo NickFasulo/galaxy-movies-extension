@@ -105,11 +105,11 @@
         }
         @keyframes gm-in { from { opacity: 0; transform: translateY(6px) } }
         .bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
-        .logo { font-weight: 800; color: #ffd63d; letter-spacing: .02em }
+        .logoimg { width: 18px; height: 18px; display: block; flex: none; }
         .line { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .card { display: none; padding: 0 14px 12px; }
         .wrap.open .card { display: block; }
-        .wrap.open .line { display: none; }
+        .wrap.open .line, .wrap.open .go { display: none; }
         .title { font-weight: 700; margin: 2px 0 8px; }
         .sec { display: flex; gap: 8px; margin: 4px 0; align-items: baseline; }
         .lab { flex: 0 0 56px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.4); }
@@ -126,10 +126,10 @@
       </style>
       <div class="wrap${open ? ' open' : ''}" role="complementary" aria-label="Where to watch">
         <div class="bar">
-          <span class="logo">GM</span>
+          <img class="logoimg" src="${chrome.runtime.getURL('icons/32.png')}" alt="Galaxy Movies">
           <span class="line">${esc(line)}</span>
           <button class="exp" title="${open ? 'Collapse' : 'Show all services'}" aria-expanded="${open}">${open ? '⌄' : '⌃'}</button>
-          <a href="${result.url}" target="_blank" rel="noopener noreferrer">→</a>
+          <a class="go" href="${result.url}" target="_blank" rel="noopener noreferrer">→</a>
           <button class="close" title="Hide">✕</button>
         </div>
         <div class="card">${card}</div>

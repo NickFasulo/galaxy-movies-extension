@@ -26,20 +26,19 @@ def render(size: int) -> Image.Image:
     d.ellipse(box, fill=BG)
     d.ellipse(box, outline=RING, width=max(1, s // 64))
 
-    # Fit the glyph height to ~58% of the circle diameter, optically centered.
-    target_h = (s - 2 * pad) * 0.58
+    # Fit the glyph inside a square ~58% of the diameter — the italic G is
+    # much wider than it is tall, so width is the binding constraint.
+    target = (s - 2 * pad) * 0.58
     font_size = s
     for _ in range(40):
         font = ImageFont.truetype(str(FONT), font_size)
         l, t, r, b = font.getbbox('G')
-        h = b - t
-        if h <= 0:
+        w, h = r - l, b - t
+        if h <= 0 or w <= 0:
             break
-        diff = target_h - h
-        if abs(diff) < 1:
+        if abs(max(w, h) - target) < 1:
             break
-        font_size = max(8, int(font_size * (target_h / h)))
-    w = r - l
+        font_size = max(8, int(font_size * (target / max(w, h))))
     d.text((s / 2 - (l + w / 2), s / 2 - (t + h / 2)), 'G', font=font, fill=FG)
 
     return img.resize((size, size), Image.LANCZOS)

@@ -110,6 +110,7 @@
         .card { display: none; padding: 0 14px 12px; }
         .wrap.open .card { display: block; }
         .wrap.open .line, .wrap.open .go { display: none; }
+        .wrap.open .close { margin-left: auto; }
         .title { font-weight: 700; margin: 2px 0 8px; }
         .sec { display: flex; gap: 8px; margin: 4px 0; align-items: baseline; }
         .lab { flex: 0 0 56px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.4); }

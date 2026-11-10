@@ -39,7 +39,8 @@ def render(size: int) -> Image.Image:
         if abs(max(w, h) - target) < 1:
             break
         font_size = max(8, int(font_size * (target / max(w, h))))
-    d.text((s / 2 - (l + w / 2), s / 2 - (t + h / 2)), 'G', font=font, fill=FG)
+    # Bounding-box center reads right-of-center on an italic face — nudge left.
+    d.text((s / 2 - (l + w / 2) - s * 0.02, s / 2 - (t + h / 2)), 'G', font=font, fill=FG)
 
     # Clip to the circle so glyph strokes can't escape the icon shape.
     mask = Image.new('L', (s, s), 0)

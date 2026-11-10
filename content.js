@@ -44,19 +44,28 @@
     const p = result.providers || {}
     const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
     const mine = new Set(myProviders.map(norm))
-    const mark = (s) => (mine.has(norm(s.name)) || [...mine].some((m) => norm(s.name).includes(m) || m.includes(norm(s.name))) ? `★${s.name}` : s.name)
+    const mark = (s) => {
+      const base = mine.has(norm(s.name)) || [...mine].some((m) => norm(s.name).includes(m) || m.includes(norm(s.name))) ? `★${s.name}` : s.name
+      return s.leavingOn ? `${base} (leaves ${s.leavingOn.slice(5)})` : base
+    }
     const subs = (p.flatrate || []).slice(0, 3)
     const free = (p.free || []).concat(p.ads || []).slice(0, 2)
     const hasData = subs.length || free.length || (p.rent || []).length || (p.buy || []).length
+    // When the title isn't streaming but is slated to arrive, that IS the
+    // answer — show it ahead of rent/buy.
+    const coming = (result.events?.coming || []).slice(0, 2)
 
     const line = hasData
       ? [
           subs.length ? `▶ ${subs.map(mark).join(', ')}` : '',
-          free.length ? `free: ${free.map(mark).join(', ')}` : ''
+          free.length ? `free: ${free.map(mark).join(', ')}` : '',
+          !subs.length && coming.length ? `→ ${coming.map((c) => `${c.provider} ${c.date || ''}`).join(', ')}` : ''
         ]
           .filter(Boolean)
           .join(' · ')
-      : 'Where to watch'
+      : coming.length
+        ? `→ ${coming.map((c) => `${c.provider} ${c.date || ''}`).join(', ')}`
+        : 'Where to watch'
 
     shadow.innerHTML = `
       <style>
@@ -87,7 +96,6 @@
       </div>`
     shadow.querySelector('button').addEventListener('click', () => host.remove())
     document.documentElement.appendChild(host)
-    setTimeout(() => host.remove(), 20000)
   }
 
   async function main() {
